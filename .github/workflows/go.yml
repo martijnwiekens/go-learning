@@ -24,13 +24,13 @@ jobs:
     - name: Install
       run: | 
         cd tictactoe
-        go mode download
+        go mod download
         cd ..
         cd fourinarow
-        go mode download
+        go mod download
         cd ..
         cd intersection
-        go mode download
+        go mod download
         cd ..
 
     - name: Build
