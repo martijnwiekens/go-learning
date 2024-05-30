@@ -57,11 +57,18 @@ jobs:
         go test ./...
         cd ..
 
-    - name: Archive production artifacts
+    - name: Archive production artifacts - TicTacToe
       uses: actions/upload-artifact@v4
       with:
-        name: dist-without-markdown
-        path: |
-          tictactoe/gotictactoe
-          fourinarow/gofourinarow
-          intersection/gointersection
+        name: tictactoe
+        path:  tictactoe/gotictactoe
+    - name: Archive production artifacts - fourinarow
+      uses: actions/upload-artifact@v4
+      with:
+        name: fourinarow
+        path:  fourinarow/gofourinarow
+    - name: Archive production artifacts - Intersection
+      uses: actions/upload-artifact@v4
+      with:
+        name: intersection
+        path:  intersection/gointersection
