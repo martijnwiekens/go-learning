@@ -1,0 +1,240 @@
+<html lang="en">
+
+<head>
+    <title>GO Todo</title>
+</head>
+
+<body>
+    <h1>GO Todo</h1>
+    <div style="border: 1px solid black; padding: 8px; margin-bottom: 10px;">
+        <form id="todo-add-form" action="/api/v1/todo" method="POST"
+            style="display: flex; flex-direction: column; gap: 8px">
+            <label for="title">Title</label>
+            <input type="text" name="title" placeholder="Title of ToDo" />
+            <label for="description">Description</label>
+            <textarea name="description" placeholder="Description of ToDo"></textarea>
+            <label for="dueDate">Due date</label>
+            <input type="date" name="dueDate" />
+            <span>
+                <label for="done">Done</label>
+                <input type="checkbox" name="done" />
+            </span>
+            <input type="submit" value="Add">
+        </form>
+    </div>
+
+    <div id="todos"></div>
+    <script>
+        // Retrieve from the API
+        function getTodos() {
+            fetch("/api/v1/todo")
+                .then(response => {
+                    // Check if the response is successful
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    // Parse the JSON from the response
+                    return response.json();
+                })
+                .then(todos => {
+                    // Handle the retrieved todos
+                    console.log(todos);
+                    displayTodos(todos); // Call a function to display the todos
+                })
+                .catch(error => {
+                    // Handle any errors that occurred during the fetch
+                    console.error("There has been a problem with your fetch operation:", error);
+                });
+        }
+
+        // Function to display the todos
+        function displayTodos(todos) {
+            const todoList = document.getElementById("todos");
+            todoList.style.display = "grid";
+            todoList.style.gap = "1rem";
+
+            // Loop through the todos
+            todos.forEach(todo => {
+                // Create list item
+                const listItem = document.createElement("div");
+
+                // Set styleing
+                listItem.style.display = "flex";
+                listItem.style.justifyContent = "space-between";
+
+                // Create content box
+                const contentBox = document.createElement("div");
+                contentBox.style.display = "flex";
+                contentBox.style.flexDirection = "column";
+                contentBox.style.gap = "8px";
+                listItem.appendChild(contentBox);
+
+                // Create title
+                const title = document.createElement("h3");
+                title.style.margin = 0;
+                title.textContent = todo.title;
+                contentBox.appendChild(title);
+
+                // Create description
+                if (todo.description) {
+                    const description = document.createElement("p");
+                    description.textContent = todo.description;
+                    contentBox.appendChild(description);
+                }
+
+                // Create due date
+                if (todo.dueDate) {
+                    const dueDate = document.createElement("p");
+                    dueDate.textContent = todo.dueDate;
+                    contentBox.appendChild(dueDate);
+                }
+
+                // Create button group div
+                const buttonGroup = document.createElement("div");
+                buttonGroup.style.display = "flex";
+                buttonGroup.style.alignItems = "start";
+                buttonGroup.style.gap = "1rem";
+                listItem.appendChild(buttonGroup);
+
+                // Create delete button
+                const deleteButton = document.createElement("button");
+                deleteButton.setAttribute("data-id", todo.id);
+                deleteButton.textContent = "Delete";
+                deleteButton.addEventListener("click", deleteTodo);
+                buttonGroup.appendChild(deleteButton);
+
+                // Create done button
+                if (!todo.done) {
+                    const doneButton = document.createElement("button");
+                    doneButton.setAttribute("data-id", todo.id);
+                    doneButton.textContent = "Done";
+                    doneButton.addEventListener("click", doneTodo);
+                    buttonGroup.appendChild(doneButton);
+                }
+
+                // Create done button
+                todoList.appendChild(listItem);
+            });
+        }
+
+        function doneTodo(event) {
+            // Find the right ID
+            const id = event.target.getAttribute("data-id");
+
+            // Update the todo
+            fetch(`/api/v1/todo/${id}`, {
+                method: "PATCH",
+                body: JSON.stringify({ done: true }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle the response data
+                    console.log("Success:", data);
+
+                    // Empty todos
+                    document.getElementById("todos").innerHTML = "";
+
+                    // Reload the todos
+                    getTodos();
+                })
+                .catch(error => {
+                    console.error("There has been a problem with your fetch operation:", error);
+                });
+        }
+
+        function deleteTodo(event) {
+            // Find the ID
+            const id = event.target.getAttribute("data-id");
+
+            // Delete the todo
+            fetch(`/api/v1/todo/${id}`, {
+                method: "DELETE"
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle the response data
+                    console.log("Success:", data);
+
+                    // Empty todos
+                    document.getElementById("todos").innerHTML = "";
+
+                    // Reload the todos
+                    getTodos();
+                })
+                .catch(error => {
+                    console.error("There has been a problem with your fetch operation:", error);
+                });
+        }
+
+        function addTodo(event) {
+            // Gather form data
+            const formData = new FormData(event.target);
+            const formObject = {};
+            formData.forEach((value, key) => {
+                if (key === "done") {
+                    formObject[key] = value === "on" ? true : false;
+                } else {
+                    formObject[key] = value;
+                }
+            });
+
+            // Convert form data to JSON
+            const jsonData = JSON.stringify(formObject);
+
+            // Send the form data as JSON via POST
+            fetch("/api/v1/todo", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: jsonData
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle the response data
+                    console.log("Success:", data);
+
+                    // Empty the form
+                    event.target.reset();
+
+                    // Empty todos
+                    document.getElementById("todos").innerHTML = "";
+
+                    // Reload the todos
+                    getTodos();
+                })
+                .catch(error => {
+                    console.error("There has been a problem with your fetch operation:", error);
+                });
+        }
+
+        // Call the function to retrieve the todos
+        getTodos();
+
+        // Connect form
+        document.getElementById("todo-add-form").addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
+            addTodo(event);
+        });
+    </script>
+</body>
+
+</html>

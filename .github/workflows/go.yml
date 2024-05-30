@@ -32,6 +32,9 @@ jobs:
         cd intersection
         go mod download
         cd ..
+        cd todo
+        go mod download
+        cd ..
 
     - name: Build
       run: | 
@@ -42,6 +45,9 @@ jobs:
         go build
         cd ..
         cd intersection
+        go build
+        cd ..
+        cd todo
         go build
         cd ..
 
@@ -56,19 +62,27 @@ jobs:
         cd intersection
         go test ./...
         cd ..
+        cd todo
+        go test ./...
+        cd ..
 
     - name: Archive production artifacts - TicTacToe
       uses: actions/upload-artifact@v4
       with:
         name: tictactoe
-        path:  tictactoe/gotictactoe
+        path:  tictactoe/tictactoe
     - name: Archive production artifacts - fourinarow
       uses: actions/upload-artifact@v4
       with:
         name: fourinarow
-        path:  fourinarow/gofourinarow
+        path:  fourinarow/fourinarow
     - name: Archive production artifacts - Intersection
       uses: actions/upload-artifact@v4
       with:
         name: intersection
-        path:  intersection/gointersection
+        path:  intersection/intersection
+    - name: Archive production artifacts - ToDo
+      uses: actions/upload-artifact@v4
+      with:
+        name: todo
+        path:  todo/todo

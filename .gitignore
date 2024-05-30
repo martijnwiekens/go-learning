@@ -1,3 +1,5 @@
-tictactoe/gotictactoe
-fourinarow/gofourinarow
-intersection/gointersection
+tictactoe/tictactoe
+fourinarow/fourinarow
+intersection/intersection
+todo/todo
+*.db
