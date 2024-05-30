@@ -21,7 +21,7 @@ In seperated mode the traffic controller runs in a goroutine with an API. The Tr
 You can change this behavior in `TRAFFIC_CONTROLLER_MODE` in [main.go](main.go)
 
 ## Install
-1. `go get .`
+1. `go mode download`
 
 ## Run
 1. `go run main.go`
