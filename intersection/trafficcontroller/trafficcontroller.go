@@ -19,7 +19,6 @@ type CurrentCall struct {
 
 type TrafficController struct {
 	intersection        *intersection.Intersection
-	mode                string
 	currentPatternIndex int
 	pendingCalls        [][2]string
 	currentCalls        []*CurrentCall
@@ -28,9 +27,9 @@ type TrafficController struct {
 const ORANGE_WAIT_TIME int = 10
 const RED_WAIT_TIME int = 11
 
-func NewTrafficController(mode string, in *intersection.Intersection) *TrafficController {
+func NewTrafficController(in *intersection.Intersection) *TrafficController {
 	// Create the traffic controller
-	t := &TrafficController{mode: mode, intersection: in}
+	t := &TrafficController{intersection: in}
 
 	// Register for events
 	event.On("gointersection-road-traffic", event.ListenerFunc(func(e event.Event) error {
@@ -90,21 +89,34 @@ func (t *TrafficController) Tick(currentTick int, try int) {
 		// Handle pending calls first
 		if len(t.pendingCalls) > 0 {
 			// Process the first call
-			call := t.pendingCalls[0]
-			t.pendingCalls = t.pendingCalls[1:]
+			removedItems := 0
+			for index, call := range t.pendingCalls {
+				// Get data
+				roadName := call[0]
+				laneName := call[1]
 
-			// Create a new call
-			newCall := &CurrentCall{
-				roadName:   call[0],
-				laneName:   call[1],
-				greenTick:  currentTick,
-				orangeTick: currentTick + ORANGE_WAIT_TIME,
-				redTick:    currentTick + RED_WAIT_TIME,
+				// Check for collison warning
+				if collisonwarning.CollisionWarningOnGreen(t.intersection, roadName, laneName) {
+					continue
+				}
+
+				// Remove the pending call from the list
+				t.pendingCalls = append(t.pendingCalls[:(index-removedItems)], t.pendingCalls[(index-removedItems)+1:]...)
+				removedItems++
+
+				// Create a new call
+				newCall := &CurrentCall{
+					roadName:   roadName,
+					laneName:   laneName,
+					greenTick:  currentTick,
+					orangeTick: currentTick + ORANGE_WAIT_TIME,
+					redTick:    currentTick + RED_WAIT_TIME,
+				}
+				t.currentCalls = append(t.currentCalls, newCall)
+
+				// Turn on the lights
+				t.SetLaneState(newCall, "GREEN")
 			}
-			t.currentCalls = append(t.currentCalls, newCall)
-
-			// Turn on the lights
-			t.SetLaneState(newCall, "GREEN")
 		} else {
 			// Continue in the patterns
 			// Go back to the first pattern
