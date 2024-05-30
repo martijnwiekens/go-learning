@@ -27,6 +27,7 @@ type Lane struct {
 }
 
 type Traffic interface {
+	GetFirstTick() int
 	CrossRoad()
 }
 
@@ -184,7 +185,7 @@ func (r *Road) Tick(currentTick int) {
 		}
 		log.Default().Println("R: +", amountCars, "cars incoming at", r.name, ":", lane.direction)
 		for i := uint8(0); i < amountCars; i++ {
-			lane.waitingTraffic = append(lane.waitingTraffic, &traffic.Car{})
+			lane.waitingTraffic = append(lane.waitingTraffic, &traffic.Car{FirstTick: currentTick})
 		}
 	}
 	if r.crossWalkEnabled && currentTick%int(r.newHumanSpeed) == 0 {
@@ -192,7 +193,7 @@ func (r *Road) Tick(currentTick int) {
 		lanes := r.GetLanesByName("CROSSWALK")
 		if len(lanes) > 0 {
 			log.Default().Println("R: +1 human incoming at", r.name, ":CROSSWALK")
-			lanes[0].waitingTraffic = append(lanes[0].waitingTraffic, &traffic.Human{})
+			lanes[0].waitingTraffic = append(lanes[0].waitingTraffic, &traffic.Human{FirstTick: currentTick})
 		}
 	}
 	if r.bycyclesEnabled && currentTick%int(r.newBycycleSpeed) == 0 {
@@ -200,7 +201,7 @@ func (r *Road) Tick(currentTick int) {
 		lanes := r.GetLanesByName("BICYCLE")
 		if len(lanes) > 0 {
 			log.Default().Println("R: +1 bicycle incoming at", r.name, ":BICYCLE")
-			lanes[0].waitingTraffic = append(lanes[0].waitingTraffic, &traffic.Bycycle{})
+			lanes[0].waitingTraffic = append(lanes[0].waitingTraffic, &traffic.Bycycle{FirstTick: currentTick})
 		}
 	}
 
@@ -219,6 +220,17 @@ func (r *Road) Tick(currentTick int) {
 	for _, lane := range r.GetLanes() {
 		lane.Tick()
 	}
+}
+
+func (r *Road) GetLongestWaitingTraffic(laneName string) int {
+	var longest int = 0
+	lanes := r.GetLanesByName(laneName)
+	for _, lane := range lanes {
+		if lane.GetWaitingTrafficCount() > longest {
+			longest = lane.GetWaitingTrafficCount()
+		}
+	}
+	return longest
 }
 
 func (l *Lane) GetWaitingTrafficCount() int {
@@ -265,4 +277,11 @@ func (l *Lane) Tick() {
 
 func (l *Lane) GetRoad() string {
 	return l.road
+}
+
+func (l *Lane) GetLongestWaitingTraffic() int {
+	if len(l.waitingTraffic) > 0 {
+		return l.waitingTraffic[0].GetFirstTick()
+	}
+	return 0
 }

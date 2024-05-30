@@ -108,7 +108,15 @@ func outputIntersection(c *gin.Context) {
 	output += "<p>Current tick: " + fmt.Sprint(GLOBAL_INTERSECTION.CurrentTick) + "</p>"
 	output += "<p>Total cars waiting: " + fmt.Sprint(GLOBAL_INTERSECTION.GetWaitingTraffic()) + "</p>"
 	output += "<table style='width: 100%'>"
-	output += "<thead><tr><th>Road</th><th>Lane</th><th>Traffic</th><th>State</th></thead>"
+	output += "<thead>"
+	output += "<tr>"
+	output += "<th>Road</th>"
+	output += "<th>Lane</th>"
+	output += "<th>Traffic</th>"
+	output += "<th>Waiting since</th>"
+	output += "<th>State</th>"
+	output += "</tr>"
+	output += "</thead>"
 	output += "<tbody>"
 	for _, road := range GLOBAL_INTERSECTION.GetRoads() {
 		for _, lane := range road.GetLanes() {
@@ -128,6 +136,9 @@ func outputIntersection(c *gin.Context) {
 			} else {
 				// Add traffic
 				output += "<td>" + fmt.Sprint(lane.GetWaitingTrafficCount()) + "</td>"
+
+				// Add waiting since
+				output += "<td>" + fmt.Sprint(lane.GetLongestWaitingTraffic()) + "</td>"
 
 				// Find traffic light color
 				lightColor := "orange"
