@@ -285,6 +285,7 @@ var TRAFFIC_PATTERN [][]*TrafficPattern = [][]*TrafficPattern{
 
 type IntersectionBridge interface {
 	GetCurrentTick() int
+	SetCurrentTick(tick int)
 	FullStopLights()
 	CollisionWarningOnGreen(roadName string, laneName string) bool
 	HasLane(roadName string, laneName string) bool
@@ -298,10 +299,15 @@ type IntersectionDirectConnection struct {
 }
 
 type IntersectionApiConnection struct {
+	currentTick int
 }
 
 func (ic *IntersectionDirectConnection) GetCurrentTick() int {
 	return ic.in.CurrentTick
+}
+
+func (ic *IntersectionDirectConnection) SetCurrentTick(tick int) {
+	// Can't do it here
 }
 
 func (ic *IntersectionDirectConnection) FullStopLights() {
@@ -402,7 +408,11 @@ func (ic *IntersectionApiConnection) GetLaneState(roadName string, laneName stri
 }
 
 func (ic *IntersectionApiConnection) GetCurrentTick() int {
-	return 0
+	return ic.currentTick
+}
+
+func (ic *IntersectionApiConnection) SetCurrentTick(tick int) {
+	ic.currentTick = tick
 }
 
 func StartTrafficControllerSeperated(tickSpeed time.Duration) {
@@ -412,6 +422,9 @@ func StartTrafficControllerSeperated(tickSpeed time.Duration) {
 	// Create the loop
 	currentTick := 0
 	for {
+		// Set the current tick in the intersection connection
+		tc.intersection.SetCurrentTick(currentTick)
+
 		// Update the TrafficController
 		tc.Tick(currentTick, 0)
 
