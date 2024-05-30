@@ -1,12 +1,15 @@
 package trafficcontroller
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
+	"net/http"
+	"time"
 
 	"github.com/gookit/event"
 	"github.com/martijnwiekens/gointersection/collisonwarning"
 	"github.com/martijnwiekens/gointersection/intersection"
-	"github.com/martijnwiekens/gointersection/road"
 )
 
 type CurrentCall struct {
@@ -18,7 +21,7 @@ type CurrentCall struct {
 }
 
 type TrafficController struct {
-	intersection        *intersection.Intersection
+	intersection        IntersectionBridge
 	currentPatternIndex int
 	pendingCalls        [][2]string
 	currentCalls        []*CurrentCall
@@ -27,9 +30,16 @@ type TrafficController struct {
 const ORANGE_WAIT_TIME int = 10
 const RED_WAIT_TIME int = 11
 
-func NewTrafficController(in *intersection.Intersection) *TrafficController {
+func NewTrafficController(mode string, in *intersection.Intersection) *TrafficController {
+	// Find the right intersection connection
+	var intersectionConnection IntersectionBridge
+	if mode == "INTEGRATED" {
+		intersectionConnection = &IntersectionDirectConnection{in: in}
+	} else {
+		intersectionConnection = &IntersectionApiConnection{}
+	}
 	// Create the traffic controller
-	t := &TrafficController{intersection: in}
+	t := &TrafficController{intersection: intersectionConnection}
 
 	// Register for events
 	event.On("gointersection-road-traffic", event.ListenerFunc(func(e event.Event) error {
@@ -96,7 +106,7 @@ func (t *TrafficController) Tick(currentTick int, try int) {
 				laneName := call[1]
 
 				// Check for collison warning
-				if collisonwarning.CollisionWarningOnGreen(t.intersection, roadName, laneName) {
+				if t.intersection.CollisionWarningOnGreen(roadName, laneName) {
 					continue
 				}
 
@@ -178,7 +188,7 @@ func (t *TrafficController) setLaneState(roadName string, laneName string, state
 
 	// Check for collision warning
 	if state == "GREEN" {
-		result := collisonwarning.CollisionWarningOnGreen(t.intersection, roadName, laneName)
+		result := t.intersection.CollisionWarningOnGreen(roadName, laneName)
 		if result {
 			log.Default().Fatal()
 		}
@@ -187,21 +197,14 @@ func (t *TrafficController) setLaneState(roadName string, laneName string, state
 	// Check if we should set the crosswalk
 	if roadName == "CROSSWALK" || roadName == "BICYCLE" {
 		// Set the crosswalk
-		var r *road.Road
 		var roadNames []string = []string{"NORTH", "SOUTH", "EAST", "WEST"}
 		for _, roadName := range roadNames {
-			r = t.intersection.GetRoadByName(roadName)
-			if r != nil {
-				lanes := r.GetLanesByName(roadName)
-				if len(lanes) > 0 {
-					lanes[0].SetState(state)
-				}
-			}
+			t.intersection.SetLightState(roadName, roadName, state)
 		}
 
 		// Check if we should set all the lanes (ALL, FORWARD, LEFT, RIGHT)
 	} else {
-		t.intersection.SetLights(roadName, laneName, state)
+		t.intersection.SetLightState(roadName, laneName, state)
 	}
 }
 
@@ -255,8 +258,8 @@ func (t *TrafficController) OnRoadEmpty(e event.Event) {
 	for _, call := range t.currentCalls {
 		if call.roadName == roadName && call.laneName == laneName {
 			// Set the light to RED on next tick
-			call.orangeTick = t.intersection.CurrentTick
-			call.redTick = t.intersection.CurrentTick + 1
+			call.orangeTick = t.intersection.GetCurrentTick()
+			call.redTick = t.intersection.GetCurrentTick() + 1
 			break
 		}
 	}
@@ -278,4 +281,144 @@ var TRAFFIC_PATTERN [][]*TrafficPattern = [][]*TrafficPattern{
 	{&TrafficPattern{roadName: "NORTH", laneName: "LEFT"}, &TrafficPattern{roadName: "SOUTH", laneName: "RIGHT"}},
 	{&TrafficPattern{roadName: "WEST", laneName: "ALL"}},
 	{&TrafficPattern{roadName: "WEST", laneName: "LEFT"}, &TrafficPattern{roadName: "EAST", laneName: "LEFT"}},
+}
+
+type IntersectionBridge interface {
+	GetCurrentTick() int
+	FullStopLights()
+	CollisionWarningOnGreen(roadName string, laneName string) bool
+	HasLane(roadName string, laneName string) bool
+	GetWaitingTrafficByLane(roadName string, laneName string) int
+	SetLightState(roadName string, laneName string, state string) bool
+	GetLaneState(roadName string, laneName string) string
+}
+
+type IntersectionDirectConnection struct {
+	in *intersection.Intersection
+}
+
+type IntersectionApiConnection struct {
+}
+
+func (ic *IntersectionDirectConnection) GetCurrentTick() int {
+	return ic.in.CurrentTick
+}
+
+func (ic *IntersectionDirectConnection) FullStopLights() {
+	ic.in.FullStopLights()
+}
+
+func (ic *IntersectionDirectConnection) CollisionWarningOnGreen(roadName string, laneName string) bool {
+	return collisonwarning.CollisionWarningOnGreen(ic.in, roadName, laneName)
+}
+
+func (ic *IntersectionDirectConnection) HasLane(roadName string, laneName string) bool {
+	return ic.in.HasLane(roadName, laneName)
+}
+
+func (ic *IntersectionDirectConnection) GetWaitingTrafficByLane(roadName string, laneName string) int {
+	return ic.in.GetWaitingTrafficByLane(roadName, laneName)
+}
+
+func (ic *IntersectionDirectConnection) SetLightState(roadName string, laneName string, state string) bool {
+	return ic.in.SetLights(roadName, laneName, state)
+}
+
+func (ic *IntersectionDirectConnection) GetLaneState(roadName string, laneName string) string {
+	return ic.in.GetLaneState(roadName, laneName)
+}
+
+func (ic *IntersectionApiConnection) FullStopLights() {
+	http.Post("http://localhost:8080/stop", "application/json", nil)
+}
+
+func (ic *IntersectionApiConnection) CollisionWarningOnGreen(roadName string, laneName string) bool {
+	result, err := http.Get("http://localhost:8080/road/lane/state?road=" + roadName + "&lane=" + laneName)
+	if err != nil {
+		return false
+	}
+	var data bool
+	json.NewDecoder(result.Body).Decode(&data)
+	return data
+}
+
+func (ic *IntersectionApiConnection) HasLane(roadName string, laneName string) bool {
+	result, err := http.Get("http://localhost:8080/road/lane?road=" + roadName + "&lane=" + laneName)
+	if err != nil {
+		return false
+	}
+	if result.StatusCode == 200 {
+		return true
+	}
+	return false
+}
+
+func (ic *IntersectionApiConnection) GetWaitingTrafficByLane(roadName string, laneName string) int {
+	result, err := http.Get("http://localhost:8080/road/lane?road=" + roadName + "&lane=" + laneName)
+	if err != nil {
+		return 0
+	}
+	type resultDataType struct {
+		Traffic int `json:"traffic"`
+	}
+	var data resultDataType
+	json.NewDecoder(result.Body).Decode(&data)
+	return data.Traffic
+}
+
+func (ic *IntersectionApiConnection) SetLightState(roadName string, laneName string, state string) bool {
+	type inputDataType struct {
+		Road  string `json:"road"`
+		Lane  string `json:"lane"`
+		State string `json:"state"`
+	}
+	inputData := inputDataType{Road: roadName, Lane: laneName, State: state}
+	jsonData, _ := json.Marshal(inputData)
+	result, err := http.Post(
+		"http://localhost:8080/road/lane/state",
+		"application/json",
+		bytes.NewBuffer(jsonData),
+	)
+	if err != nil {
+		return false
+	}
+	if result.StatusCode == 200 {
+		return true
+	}
+	return false
+}
+
+func (ic *IntersectionApiConnection) GetLaneState(roadName string, laneName string) string {
+	result, err := http.Get("http://localhost:8080/road/lane?road=" + roadName + "&lane=" + laneName)
+	if err != nil {
+		return "FLASH"
+	}
+	type resultDataType struct {
+		State string `json:"state"`
+	}
+	var data resultDataType
+	json.NewDecoder(result.Body).Decode(&data)
+	return data.State
+}
+
+func (ic *IntersectionApiConnection) GetCurrentTick() int {
+	return 0
+}
+
+func StartTrafficControllerSeperated(tickSpeed time.Duration) {
+	// Create the TrafficController
+	tc := NewTrafficController("SEPERATED", nil)
+
+	// Create the loop
+	currentTick := 0
+	for {
+		// Update the TrafficController
+		tc.Tick(currentTick, 0)
+
+		// Increase the tick
+		currentTick++
+
+		// Wait a little
+		time.Sleep(tickSpeed)
+	}
 }

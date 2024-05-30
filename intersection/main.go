@@ -5,10 +5,15 @@ import (
 	"time"
 
 	"github.com/martijnwiekens/gointersection/intersection"
+	"github.com/martijnwiekens/gointersection/intersectionapi"
 	"github.com/martijnwiekens/gointersection/road"
 	"github.com/martijnwiekens/gointersection/trafficcontroller"
 	"github.com/martijnwiekens/gointersection/ui"
 )
+
+// const TRAFFIC_CONTROLLER_MODE = "INTEGRATED"
+const TRAFFIC_CONTROLLER_MODE = "SEPERATED"
+const TICK_SPEED = 4 * time.Second
 
 func main() {
 	// Remember the roads
@@ -34,7 +39,17 @@ func main() {
 	in := intersection.NewIntersection(roads)
 
 	// Create the traffic controller
-	tc := trafficcontroller.NewTrafficController("PATTERN", in)
+	var tc *trafficcontroller.TrafficController
+	if TRAFFIC_CONTROLLER_MODE == "INTEGRATED" {
+		// Create traffic controller in the intersection
+		tc = trafficcontroller.NewTrafficController(TRAFFIC_CONTROLLER_MODE, in)
+	} else {
+		// Start the API
+		go intersectionapi.StartApi(in)
+
+		// Create seperate traffic controller
+		go trafficcontroller.StartTrafficControllerSeperated(TICK_SPEED)
+	}
 
 	// Remember the current tick
 	currentTick := 0
@@ -48,7 +63,9 @@ func main() {
 		in.Tick(currentTick)
 
 		// Tick the traffic controller
-		tc.Tick(currentTick, 0)
+		if TRAFFIC_CONTROLLER_MODE == "INTEGRATED" {
+			tc.Tick(currentTick, 0)
+		}
 
 		// Print the intersection
 		ui.PrintTick(currentTick)
@@ -59,6 +76,6 @@ func main() {
 		currentTick++
 
 		// Sleep for 1 second
-		time.Sleep(4 * time.Second)
+		time.Sleep(TICK_SPEED)
 	}
 }

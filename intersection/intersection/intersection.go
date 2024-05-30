@@ -64,8 +64,9 @@ func (i *Intersection) EnableLights(roadName string, direction string) {
 	}
 }
 
-func (i *Intersection) SetLights(roadName string, direction string, state string) {
+func (i *Intersection) SetLights(roadName string, direction string, state string) bool {
 	// Use all the lanes
+	lightsSet := false
 	road := i.GetRoadByName(roadName)
 	if road != nil {
 		laneNames := []string{direction}
@@ -76,9 +77,11 @@ func (i *Intersection) SetLights(roadName string, direction string, state string
 			lanes := road.GetLanesByName(laneName)
 			for _, lane := range lanes {
 				lane.SetState(state)
+				lightsSet = true
 			}
 		}
 	}
+	return lightsSet
 }
 
 func (i *Intersection) GetWaitingTrafficByLane(roadName string, direction string) int {
