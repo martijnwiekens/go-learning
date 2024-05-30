@@ -179,7 +179,7 @@ func (r *Road) Tick(currentTick int) {
 
 		// Add new cars, there is a 10% chance of a double car
 		var amountCars uint8 = 1
-		if rand.Intn(10) == 0 {
+		if rand.Intn(5) == 0 {
 			amountCars = uint8(rand.Intn(10))
 		}
 		log.Default().Println("R: +", amountCars, "cars incoming at", r.name, ":", lane.direction)

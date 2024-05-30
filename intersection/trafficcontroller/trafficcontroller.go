@@ -198,9 +198,25 @@ func (t *TrafficController) OnRoadTraffic(e event.Event) {
 	roadName := e.Get("road").(string)
 	laneName := e.Get("lane").(string)
 
+	// Check if the lane is currently green
+	if t.intersection.GetLaneState(roadName, laneName) == "GREEN" {
+		return
+	}
+
+	// Check if we already planned the call
+	isAlreadyPlanned := false
+	for _, call := range t.currentCalls {
+		if call.roadName == roadName && call.laneName == laneName {
+			isAlreadyPlanned = true
+			break
+		}
+	}
+
 	// Plan the green call
-	t.pendingCalls = append(t.pendingCalls, [2]string{roadName, laneName})
-	log.Default().Println("TC: Planned call for", roadName, ":", laneName)
+	if !isAlreadyPlanned {
+		t.pendingCalls = append(t.pendingCalls, [2]string{roadName, laneName})
+		log.Default().Println("TC: Planned call for", roadName, ":", laneName)
+	}
 }
 
 func (t *TrafficController) OnRoadEmpty(e event.Event) {
