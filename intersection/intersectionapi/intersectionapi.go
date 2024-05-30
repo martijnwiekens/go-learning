@@ -114,6 +114,7 @@ func outputIntersection(c *gin.Context) {
 	output += "<th>Lane</th>"
 	output += "<th>Traffic</th>"
 	output += "<th>Waiting since</th>"
+	output += "<th>Notified</th>"
 	output += "<th>State</th>"
 	output += "</tr>"
 	output += "</thead>"
@@ -133,12 +134,17 @@ func outputIntersection(c *gin.Context) {
 			if lane.GetDirection() == "OUTPUT" {
 				output += "<td />"
 				output += "<td />"
+				output += "<td />"
+				output += "<td />"
 			} else {
 				// Add traffic
 				output += "<td>" + fmt.Sprint(lane.GetWaitingTrafficCount()) + "</td>"
 
 				// Add waiting since
 				output += "<td>" + fmt.Sprint(lane.GetLongestWaitingTraffic()) + "</td>"
+
+				// Add notified
+				output += "<td>" + fmt.Sprint(lane.GetNotified()) + "</td>"
 
 				// Find traffic light color
 				lightColor := "orange"

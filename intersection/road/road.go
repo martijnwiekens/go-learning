@@ -16,14 +16,14 @@ type Road struct {
 	newBycycleSpeed  uint8   // How fast new bycycles are coming in the road
 	crossWalkEnabled bool    // Whether or not the road has a crosswalk
 	bycyclesEnabled  bool    // Whether or not the road has bycycles
-	notifiedTraffic  bool    // Whether or not the road has been notified of much traffic to the traffic controller
 }
 
 type Lane struct {
-	road           string    // The road this lane belongs to
-	waitingTraffic []Traffic // Traffic that is waiting in the lane
-	direction      string    // Direction of the lane LEFT, RIGHT, FORWARD, ALL
-	state          string    // State of the lane RED, ORANGE, GREEN
+	road            string    // The road this lane belongs to
+	waitingTraffic  []Traffic // Traffic that is waiting in the lane
+	direction       string    // Direction of the lane LEFT, RIGHT, FORWARD, ALL
+	state           string    // State of the lane RED, ORANGE, GREEN
+	notifiedTraffic bool      // Whether or not the road has been notified of much traffic to the traffic controller
 }
 
 type Traffic interface {
@@ -138,7 +138,14 @@ func NewRoad(input NewRoadInput) *Road {
 
 	// Handle empty road
 	event.On("gointersection-road-empty", event.ListenerFunc(func(e event.Event) error {
-		r.notifiedTraffic = false
+		roadName := e.Get("road").(string)
+		laneName := e.Get("lane").(string)
+		if roadName == r.name {
+			lanes := r.GetLanesByName(laneName)
+			if len(lanes) > 0 {
+				lanes[0].notifiedTraffic = false
+			}
+		}
 		return nil
 	}), event.Normal)
 
@@ -206,13 +213,11 @@ func (r *Road) Tick(currentTick int) {
 	}
 
 	// Check how many items in the lane
-	if !r.notifiedTraffic {
-		for _, lane := range r.GetLanes() {
-			if lane.GetWaitingTrafficCount() > 3 {
-				r.notifiedTraffic = true
-				event.MustFire("gointersection-road-traffic", event.M{"road": r.name, "lane": lane.direction})
-				break
-			}
+	for _, lane := range r.GetLanes() {
+		if lane.GetWaitingTrafficCount() > 3 && !lane.notifiedTraffic {
+			lane.notifiedTraffic = true
+			event.MustFire("gointersection-road-traffic", event.M{"road": r.name, "lane": lane.direction})
+			break
 		}
 	}
 
@@ -284,4 +289,8 @@ func (l *Lane) GetLongestWaitingTraffic() int {
 		return l.waitingTraffic[0].GetFirstTick()
 	}
 	return 0
+}
+
+func (l *Lane) GetNotified() bool {
+	return l.notifiedTraffic
 }
