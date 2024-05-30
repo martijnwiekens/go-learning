@@ -1,4 +1,4 @@
-module github.com/martijnwiekens/gointersection
+module github.com/martijnwiekens/go-learning/intersection
 
 go 1.22.3
 

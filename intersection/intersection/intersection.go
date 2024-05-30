@@ -1,7 +1,7 @@
 package intersection
 
 import (
-	"github.com/martijnwiekens/gointersection/road"
+	"github.com/martijnwiekens/go-learning/intersection/road"
 )
 
 type Intersection struct {

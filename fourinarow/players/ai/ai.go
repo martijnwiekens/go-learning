@@ -3,7 +3,7 @@ package ai
 import (
 	"math/rand/v2"
 
-	"github.com/martijnwiekens/gofourinarow/board"
+	"github.com/martijnwiekens/go-learning/fourinarow/board"
 )
 
 type AIPlayer struct {

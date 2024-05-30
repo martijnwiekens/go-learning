@@ -1,8 +1,8 @@
 package human
 
 import (
-	"github.com/martijnwiekens/gofourinarow/board"
-	"github.com/martijnwiekens/gofourinarow/ui"
+	"github.com/martijnwiekens/go-learning/fourinarow/board"
+	"github.com/martijnwiekens/go-learning/fourinarow/ui"
 )
 
 type HumanPlayer struct {

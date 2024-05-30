@@ -1,10 +1,10 @@
 package game
 
 import (
-	"github.com/martijnwiekens/gotictactoe/board"
-	"github.com/martijnwiekens/gotictactoe/players/ai"
-	"github.com/martijnwiekens/gotictactoe/players/human"
-	"github.com/martijnwiekens/gotictactoe/ui"
+	"github.com/martijnwiekens/go-learning/tictactoe/board"
+	"github.com/martijnwiekens/go-learning/tictactoe/players/ai"
+	"github.com/martijnwiekens/go-learning/tictactoe/players/human"
+	"github.com/martijnwiekens/go-learning/tictactoe/ui"
 )
 
 var totalGames uint8 = 0

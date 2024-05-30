@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 
-	"github.com/martijnwiekens/gofourinarow/board"
+	"github.com/martijnwiekens/go-learning/fourinarow/board"
 )
 
 func PrintBoard(playBoardObj *board.Board) {

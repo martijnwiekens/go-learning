@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/martijnwiekens/gointersection/collisonwarning"
-	"github.com/martijnwiekens/gointersection/intersection"
+	"github.com/martijnwiekens/go-learning/intersection/collisonwarning"
+	"github.com/martijnwiekens/go-learning/intersection/intersection"
 )
 
 var GLOBAL_INTERSECTION *intersection.Intersection = nil

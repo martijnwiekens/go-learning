@@ -1,10 +1,10 @@
 package game
 
 import (
-	"github.com/martijnwiekens/gofourinarow/board"
-	"github.com/martijnwiekens/gofourinarow/players/ai"
-	"github.com/martijnwiekens/gofourinarow/players/human"
-	"github.com/martijnwiekens/gofourinarow/ui"
+	"github.com/martijnwiekens/go-learning/fourinarow/board"
+	"github.com/martijnwiekens/go-learning/fourinarow/players/ai"
+	"github.com/martijnwiekens/go-learning/fourinarow/players/human"
+	"github.com/martijnwiekens/go-learning/fourinarow/ui"
 )
 
 var totalGames uint8 = 0

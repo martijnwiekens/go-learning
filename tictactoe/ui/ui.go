@@ -3,7 +3,7 @@ package ui
 import (
 	"fmt"
 
-	"github.com/martijnwiekens/gotictactoe/board"
+	"github.com/martijnwiekens/go-learning/tictactoe/board"
 )
 
 func PrintBoard(playBoardObj *board.Board) {

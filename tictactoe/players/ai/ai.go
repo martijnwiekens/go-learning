@@ -3,7 +3,7 @@ package ai
 import (
 	"math/rand/v2"
 
-	"github.com/martijnwiekens/gotictactoe/board"
+	"github.com/martijnwiekens/go-learning/tictactoe/board"
 )
 
 type AIPlayer struct {

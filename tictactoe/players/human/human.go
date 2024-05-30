@@ -1,8 +1,8 @@
 package human
 
 import (
-	"github.com/martijnwiekens/gotictactoe/board"
-	"github.com/martijnwiekens/gotictactoe/ui"
+	"github.com/martijnwiekens/go-learning/tictactoe/board"
+	"github.com/martijnwiekens/go-learning/tictactoe/ui"
 )
 
 type HumanPlayer struct {
