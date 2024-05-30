@@ -34,8 +34,8 @@ func getLane(c *gin.Context) {
 
 	// Build the JSON
 	type outputData struct {
-		RoadName string `json:"roadName"`
-		LaneName string `json:"laneName"`
+		RoadName string `json:"road"`
+		LaneName string `json:"lane"`
 		State    string `json:"state"`
 		Traffic  int    `json:"traffic"`
 	}
