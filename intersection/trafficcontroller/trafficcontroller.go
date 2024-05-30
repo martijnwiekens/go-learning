@@ -367,9 +367,13 @@ func (ic *IntersectionApiConnection) GetWaitingTrafficByLane(roadName string, la
 	type resultDataType struct {
 		Traffic int `json:"traffic"`
 	}
-	var data resultDataType
+	var data []resultDataType
 	json.NewDecoder(result.Body).Decode(&data)
-	return data.Traffic
+	var totalTraffic int
+	for _, value := range data {
+		totalTraffic += value.Traffic
+	}
+	return totalTraffic
 }
 
 func (ic *IntersectionApiConnection) SetLightState(roadName string, laneName string, state string) bool {

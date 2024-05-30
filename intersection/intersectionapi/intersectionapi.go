@@ -43,8 +43,16 @@ func getLane(c *gin.Context) {
 		Traffic  int    `json:"traffic"`
 	}
 	road := GLOBAL_INTERSECTION.GetRoadByName(roadName)
-	lane := road.GetLanesByName(laneName)[0]
-	r := outputData{RoadName: roadName, LaneName: laneName, State: lane.GetState(), Traffic: lane.GetWaitingTrafficCount()}
+	lane := road.GetLanesByName(laneName)
+	var r []outputData
+	for _, lane := range lane {
+		r = append(r, outputData{
+			RoadName: roadName,
+			LaneName: laneName,
+			State:    lane.GetState(),
+			Traffic:  lane.GetWaitingTrafficCount(),
+		})
+	}
 
 	// Return the JSON
 	c.JSON(200, r)
