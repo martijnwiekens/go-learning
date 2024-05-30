@@ -36,13 +36,13 @@ jobs:
     - name: Build
       run: | 
         cd tictactoe
-        go build ./...
+        go build
         cd ..
         cd fourinarow
-        go build ./...
+        go build
         cd ..
         cd intersection
-        go build ./...
+        go build
         cd ..
 
     - name: Test
@@ -56,3 +56,12 @@ jobs:
         cd intersection
         go test ./...
         cd ..
+
+    - name: Archive production artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-without-markdown
+        path: |
+          tictactoe/gotictactoe
+          fourinarow/gofourinarow
+          intersection/gointersection
