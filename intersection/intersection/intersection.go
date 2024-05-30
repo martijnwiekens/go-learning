@@ -96,6 +96,16 @@ func (i *Intersection) GetWaitingTrafficByLane(roadName string, direction string
 	return waitingTraffic
 }
 
+func (i *Intersection) GetWaitingTraffic() int {
+	var waitingTraffic int = 0
+	for _, r := range i.roads {
+		for _, l := range r.GetLanes() {
+			waitingTraffic += l.GetWaitingTrafficCount()
+		}
+	}
+	return waitingTraffic
+}
+
 func (i *Intersection) HasLane(roadName string, direction string) bool {
 	road := i.GetRoadByName(roadName)
 	if road != nil {

@@ -68,9 +68,11 @@ func main() {
 		}
 
 		// Print the intersection
-		ui.PrintTick(currentTick)
-		ui.PrintTotalCarsWaiting(in)
-		ui.PrintIntersection(in)
+		if TRAFFIC_CONTROLLER_MODE == "INTEGRATED" {
+			ui.PrintTick(currentTick)
+			ui.PrintTotalCarsWaiting(in)
+			ui.PrintIntersection(in)
+		}
 
 		// Increment the tick
 		currentTick++
