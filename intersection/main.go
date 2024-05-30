@@ -4,11 +4,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/martijnwiekens/go-learning/intersection/intersection"
-	"github.com/martijnwiekens/go-learning/intersection/intersectionapi"
-	"github.com/martijnwiekens/go-learning/intersection/road"
-	"github.com/martijnwiekens/go-learning/intersection/trafficcontroller"
-	"github.com/martijnwiekens/go-learning/intersection/ui"
+	"github.com/martijnwiekens/go-learning/gointersection/intersection"
+	"github.com/martijnwiekens/go-learning/gointersection/intersectionapi"
+	"github.com/martijnwiekens/go-learning/gointersection/road"
+	"github.com/martijnwiekens/go-learning/gointersection/trafficcontroller"
+	"github.com/martijnwiekens/go-learning/gointersection/ui"
 )
 
 // const TRAFFIC_CONTROLLER_MODE = "INTEGRATED"

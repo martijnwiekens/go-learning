@@ -3,8 +3,8 @@ package collisonwarning
 import (
 	"testing"
 
-	"github.com/martijnwiekens/go-learning/intersection/intersection"
-	"github.com/martijnwiekens/go-learning/intersection/road"
+	"github.com/martijnwiekens/go-learning/gointersection/intersection"
+	"github.com/martijnwiekens/go-learning/gointersection/road"
 )
 
 func prepareIntersection() *intersection.Intersection {

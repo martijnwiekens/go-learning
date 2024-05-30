@@ -3,8 +3,8 @@ package collisonwarning
 import (
 	"log"
 
-	"github.com/martijnwiekens/go-learning/intersection/intersection"
-	"github.com/martijnwiekens/go-learning/intersection/road"
+	"github.com/martijnwiekens/go-learning/gointersection/intersection"
+	"github.com/martijnwiekens/go-learning/gointersection/road"
 )
 
 func CollisionWarningOnGreen(in *intersection.Intersection, roadName string, laneName string) bool {

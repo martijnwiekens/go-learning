@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/gookit/event"
-	"github.com/martijnwiekens/go-learning/intersection/collisonwarning"
-	"github.com/martijnwiekens/go-learning/intersection/intersection"
+	"github.com/martijnwiekens/go-learning/gointersection/collisonwarning"
+	"github.com/martijnwiekens/go-learning/gointersection/intersection"
 )
 
 type CurrentCall struct {

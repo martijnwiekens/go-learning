@@ -80,7 +80,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: intersection
-        path:  intersection/intersection
+        path:  intersection/gointersection
     - name: Archive production artifacts - ToDo
       uses: actions/upload-artifact@v4
       with:

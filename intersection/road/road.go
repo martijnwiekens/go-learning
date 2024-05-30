@@ -5,7 +5,7 @@ import (
 	"math/rand"
 
 	"github.com/gookit/event"
-	"github.com/martijnwiekens/go-learning/intersection/traffic"
+	"github.com/martijnwiekens/go-learning/gointersection/traffic"
 )
 
 type Road struct {

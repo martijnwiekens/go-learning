@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/martijnwiekens/go-learning/intersection/intersection"
-	"github.com/martijnwiekens/go-learning/intersection/road"
+	"github.com/martijnwiekens/go-learning/gointersection/intersection"
+	"github.com/martijnwiekens/go-learning/gointersection/road"
 )
 
 func PrintTick(currentTick int) {
