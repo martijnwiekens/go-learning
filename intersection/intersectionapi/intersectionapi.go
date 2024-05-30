@@ -33,15 +33,15 @@ func getLane(c *gin.Context) {
 	}
 
 	// Build the JSON
-	type result struct {
-		roadName string
-		laneName string
-		state    string
-		traffic  int
+	type outputData struct {
+		RoadName string `json:"roadName"`
+		LaneName string `json:"laneName"`
+		State    string `json:"state"`
+		Traffic  int    `json:"traffic"`
 	}
 	road := GLOBAL_INTERSECTION.GetRoadByName(roadName)
 	lane := road.GetLanesByName(laneName)[0]
-	r := result{roadName: roadName, laneName: laneName, state: lane.GetState(), traffic: lane.GetWaitingTrafficCount()}
+	r := outputData{RoadName: roadName, LaneName: laneName, State: lane.GetState(), Traffic: lane.GetWaitingTrafficCount()}
 
 	// Return the JSON
 	c.JSON(200, r)
