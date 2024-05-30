@@ -242,12 +242,14 @@ func (t *TrafficController) OnRoadEmpty(e event.Event) {
 	// Check if other lanes have traffic
 	if t.intersection.GetWaitingTrafficByLane(roadName, laneName) > 0 {
 		// Don't do anything
+		log.Default().Println("TC: There is still traffic on", roadName, ":", laneName)
 		return
 	}
 
 	// Check if the lane is green
 	if t.intersection.GetLaneState(roadName, laneName) != "GREEN" {
 		// Don't need to do anything
+		log.Default().Println("TC: Light is not GREEN on ", roadName, ":", laneName)
 		return
 	}
 
@@ -406,9 +408,9 @@ func (ic *IntersectionApiConnection) GetLaneState(roadName string, laneName stri
 	type resultDataType struct {
 		State string `json:"state"`
 	}
-	var data resultDataType
+	var data []resultDataType
 	json.NewDecoder(result.Body).Decode(&data)
-	return data.State
+	return data[0].State
 }
 
 func (ic *IntersectionApiConnection) GetCurrentTick() int {
