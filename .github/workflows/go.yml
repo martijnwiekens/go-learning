@@ -1,4 +1,4 @@
-# This workflow will build a golang project
+# Builds, vets and tests each Go module in this repository.
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
 name: Go
@@ -9,80 +9,47 @@ on:
   pull_request:
     branches: [ "main" ]
 
-jobs:
+permissions:
+  contents: read
 
-  build:
+concurrency:
+  group: go-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: ${{ matrix.module }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        module: [ tictactoe, fourinarow, intersection, todo ]
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
 
     - name: Set up Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: '1.22.3'
+        go-version-file: ${{ matrix.module }}/go.mod
+        cache: false
 
-    - name: Install
-      run: | 
-        cd tictactoe
-        go mod download
-        cd ..
-        cd fourinarow
-        go mod download
-        cd ..
-        cd intersection
-        go mod download
-        cd ..
-        cd todo
-        go mod download
-        cd ..
+    - name: Check formatting
+      run: test -z "$(gofmt -l .)"
+
+    - name: Download modules
+      run: go mod download
+
+    - name: Vet
+      run: go vet ./...
 
     - name: Build
-      run: | 
-        cd tictactoe
-        go build
-        cd ..
-        cd fourinarow
-        go build
-        cd ..
-        cd intersection
-        go build
-        cd ..
-        cd todo
-        go build
-        cd ..
+      run: go build ./...
 
     - name: Test
-      run: | 
-        cd tictactoe
-        go test ./...
-        cd ..
-        cd fourinarow
-        go test ./...
-        cd ..
-        cd intersection
-        go test ./...
-        cd ..
-        cd todo
-        go test ./...
-        cd ..
-
-    - name: Archive production artifacts - TicTacToe
-      uses: actions/upload-artifact@v4
-      with:
-        name: tictactoe
-        path:  tictactoe/tictactoe
-    - name: Archive production artifacts - fourinarow
-      uses: actions/upload-artifact@v4
-      with:
-        name: fourinarow
-        path:  fourinarow/fourinarow
-    - name: Archive production artifacts - Intersection
-      uses: actions/upload-artifact@v4
-      with:
-        name: intersection
-        path:  intersection/gointersection
-    - name: Archive production artifacts - ToDo
-      uses: actions/upload-artifact@v4
-      with:
-        name: todo
-        path:  todo/todo
+      run: go test ./...
